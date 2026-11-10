@@ -1,62 +1,163 @@
-  
-# React + TypeScript + Vite
+# Kanban Dashboard – Docker & Jenkins CI/CD on AWS
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Project Overview
 
-Currently, two official plugins are available:
+This project demonstrates the deployment of a React + TypeScript Kanban Dashboard using Docker, Jenkins CI/CD, Docker Hub, and AWS EC2.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+The application is containerized using a multi-stage Docker build and served using Nginx running as a non-root user.
 
-## React Compiler
+## Technologies Used
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React
+- TypeScript
+- Vite
+- Docker
+- Jenkins
+- GitHub
+- Docker Hub
+- AWS EC2
+- Nginx
+- Docker Scout
 
-## Expanding the ESLint configuration
+## Architecture
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+GitHub → Jenkins → Docker Build → Docker Hub → AWS EC2 → Running Application
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      tseslint.configs.recommendedTypeChecked,
-      tseslint.configs.strictTypeChecked,
-      tseslint.configs.stylisticTypeChecked,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-  },
-])
-```
-
-You can also install `eslint-plugin-react-x` and `eslint-plugin-react-dom` for React-specific rules.
-
-## DevOps CI/CD Deployment
-
-This project uses:
-
-- Docker for containerization
-- Jenkins for CI/CD automation
-- GitHub for source code management
-- Docker Hub for image storage
-- AWS EC2 for application hosting
-- Nginx for serving the production application
-
-### Application URL
+## Application URL
 
 http://52.66.157.239
 
-### Docker Image
+## Docker Hub Image
 
 `gilllavish25/lavish-kanban-dashboard`
 
-### CI/CD automatic deployment test
+Docker image tags:
+- `23`
+- `latest`
 
-This change is added to test automatic Jenkins deployment after a GitHub commit.
+## Run Locally
+
+Prerequisites:
+- Node.js 22 or compatible version
+- npm
+
+Clone the repository:
+
+```bash
+git clone https://github.com/gilllavish25/kanban-dashboard.git
+cd kanban-dashboard
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+Build the application:
+
+```bash
+npm run build
+```
+
+## Run Using Docker
+
+Pull the image:
+
+```bash
+docker pull gilllavish25/lavish-kanban-dashboard:latest
+```
+
+Run the container:
+
+```bash
+docker run -d \
+  --name kanban-app \
+  -p 8080:8080 \
+  gilllavish25/lavish-kanban-dashboard:latest
+```
+
+Open:
+
+http://localhost:8080
+
+## Jenkins CI/CD Pipeline
+
+The Jenkins pipeline automates the following stages:
+
+1. Checkout source code from GitHub.
+2. Build the Docker image.
+3. Authenticate with Docker Hub using Jenkins Credentials.
+4. Push versioned images to Docker Hub.
+5. Pull the new image on AWS EC2.
+6. Deploy the application in a Docker container.
+7. Verify deployment using an HTTP health check.
+8. Attempt rollback if deployment validation fails.
+
+Automatic builds are configured through Jenkins SCM polling.
+
+## Docker Security
+
+The project includes:
+
+- Multi-stage Docker build.
+- Non-root Nginx runtime user (UID 101).
+- Docker health check.
+- CPU limit of 0.5 core.
+- Memory limit of 128 MB.
+- `.dockerignore` to exclude unnecessary files.
+- Jenkins Credentials for Docker Hub authentication.
+- Docker Scout vulnerability scanning.
+
+### Latest Docker Scout Scan
+
+Image: `gilllavish25/lavish-kanban-dashboard:23`
+
+| Severity | Findings |
+|---|---:|
+| Critical | 0 |
+| High | 4 |
+| Medium | 6 |
+| Low | 5 |
+| Unspecified | 1 |
+| Total | 16 |
+
+The previous scan reported 47 vulnerabilities. The updated image reports 16, approximately 66% fewer findings.
+
+Some vulnerabilities remain because the current Alpine package repositories did not provide the required fixed versions at the time of verification.
+
+## AWS Deployment
+
+The application is deployed on an Ubuntu EC2 instance.
+
+- Application port: 80
+- Container port: 8080
+- Container name: `kanban-app`
+- Restart policy: `unless-stopped`
+
+## Verification
+
+The following checks were performed:
+
+- Docker container status: healthy.
+- HTTP response: 200 OK.
+- Runtime user: 101 (non-root).
+- Memory limit: 128 MB.
+- CPU limit: 0.5 core.
+- Nginx health-check requests: successful.
+
+## Repository
+
+GitHub: https://github.com/gilllavish25/kanban-dashboard
+
+Docker Hub: https://hub.docker.com/r/gilllavish25/lavish-kanban-dashboard
+
+## Author
+
+Lavish Gill
